@@ -3,12 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Control de Asistencia Global | Portal Corporativo</title>
+  <meta name="theme-color" content="#153540" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Control de Asistencia Global | App Corporativa</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js para Gráficas del Admin -->
+  <!-- Chart.js para Gráficas -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- SheetJS para Exportar a Excel Real (.xlsx) -->
+  <!-- SheetJS para Exportar a Excel (.xlsx) -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
   <!-- Iconos Lucide -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -23,6 +26,7 @@
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     .bg-corp { background-color: var(--corp-primary); }
+    .bg-corp-dark { background-color: var(--corp-dark); }
     .bg-corp-light { background-color: var(--corp-light); }
     .hover\:bg-corp-light:hover { background-color: var(--corp-light); }
     .text-corp { color: var(--corp-primary); }
@@ -51,7 +55,6 @@
   <!-- NOTIFICACIÓN TOAST -->
   <div id="toastBox" class="fixed top-5 right-5 z-50 hidden max-w-sm w-full bg-white border-l-4 border-corp shadow-2xl rounded-lg p-4 transition-all">
     <div class="flex items-start gap-3">
-      <div id="toastIcon" class="mt-0.5 text-corp"></div>
       <div class="flex-1">
         <h4 id="toastTitle" class="text-sm font-bold text-slate-900">Aviso</h4>
         <p id="toastMsg" class="text-xs text-slate-600 mt-1"></p>
@@ -98,436 +101,506 @@
   </section>
 
   <!-- ===================================================================== -->
-  <!-- VISTA 2: PORTAL DEL COLABORADOR (MOBILE FIRST)                        -->
+  <!-- VISTA 2: PORTAL DEL COLABORADOR (SIDEBAR RESPONSIVO + MOBILE APP)     -->
   <!-- ===================================================================== -->
-  <section id="viewColab" class="hidden min-h-screen pb-12">
-    <!-- Navbar -->
-    <header class="bg-corp text-white shadow-md sticky top-0 z-30">
-      <div class="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+  <section id="viewColab" class="hidden min-h-screen flex bg-[#f3f6f8]">
+    <!-- Fondo oscuro móvil al abrir sidebar -->
+    <div id="backdropColab" onclick="toggleSidebar('colab')" class="fixed inset-0 bg-slate-900/50 z-30 hidden lg:hidden"></div>
+
+    <!-- Sidebar Colaborador -->
+    <aside id="sidebarColab" class="fixed inset-y-0 left-0 z-40 w-64 bg-corp text-white flex flex-col justify-between transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-200 ease-in-out shadow-xl">
+      <div>
+        <div class="p-5 flex items-center justify-between border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center font-bold text-sm" id="colabAvatar">U</div>
+            <div class="overflow-hidden">
+              <h2 class="text-sm font-bold truncate" id="colabName">Colaborador</h2>
+              <p class="text-[11px] text-slate-300 truncate" id="colabMetaInfo">Modalidad</p>
+            </div>
+          </div>
+          <button onclick="toggleSidebar('colab')" class="lg:hidden p-1 text-slate-300 hover:text-white">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <nav class="p-3 space-y-1 text-xs font-semibold">
+          <button onclick="cambiarTabColab('colabTabMarcaje')" id="btn-colabTabMarcaje" class="tab-colab-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-white/15 text-white transition">
+            <i data-lucide="fingerprint" class="w-4 h-4"></i>
+            <span>Registro de Jornada</span>
+          </button>
+          <button onclick="cambiarTabColab('colabTabTurnos')" id="btn-colabTabTurnos" class="tab-colab-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition">
+            <i data-lucide="calendar-days" class="w-4 h-4"></i>
+            <span>Mis Turnos e Historial</span>
+          </button>
+          <button onclick="cambiarTabColab('colabTabObs')" id="btn-colabTabObs" class="tab-colab-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition">
+            <i data-lucide="message-square-warning" class="w-4 h-4"></i>
+            <span>Observaciones Admin</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="p-3 border-t border-white/10 space-y-1 text-xs font-semibold">
+        <button onclick="abrirModalClave()" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition">
+          <i data-lucide="key-round" class="w-4 h-4"></i>
+          <span>Cambiar Contraseña</span>
+        </button>
+        <button onclick="cerrarSesion()" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-rose-300 hover:bg-rose-500/20 transition">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Contenido Principal Colaborador -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <!-- Barra superior móvil -->
+      <header class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between lg:px-8 sticky top-0 z-20">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center font-bold text-sm" id="colabAvatar">U</div>
-          <div>
-            <h2 class="text-sm font-bold leading-tight" id="colabName">Colaborador</h2>
-            <p class="text-[11px] text-slate-300 flex items-center gap-1" id="colabMetaInfo">Modalidad • Zona Horaria</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="abrirModalClave()" title="Cambiar Contraseña" class="p-2 hover:bg-white/10 rounded-lg transition">
-            <i data-lucide="key-round" class="w-4 h-4"></i>
+          <button onclick="toggleSidebar('colab')" class="lg:hidden p-2 rounded-lg text-corp hover:bg-slate-100">
+            <i data-lucide="menu" class="w-5 h-5"></i>
           </button>
-          <button onclick="cerrarSesion()" title="Cerrar Sesión" class="p-2 hover:bg-red-500/20 text-red-200 rounded-lg transition">
-            <i data-lucide="log-out" class="w-4 h-4"></i>
-          </button>
+          <h1 class="text-sm sm:text-base font-bold text-corp" id="tituloHeaderColab">Registro de Jornada</h1>
         </div>
-      </div>
-    </header>
+        <button onclick="refrescarDatosColaborador()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-corp rounded-lg text-xs font-semibold flex items-center gap-1.5">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">Sincronizar</span>
+        </button>
+      </header>
 
-    <main class="max-w-4xl mx-auto px-4 pt-6 space-y-6">
-      <!-- Reloj en Tiempo Real y Estado GPS -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 text-center relative overflow-hidden">
-        <span id="badgeModalidad" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-corp mb-3">
-          <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> Verificando ubicación...
-        </span>
-        <div id="relojDigital" class="text-4xl sm:text-5xl font-black tracking-tight text-corp tabular-nums">00:00:00</div>
-        <p id="fechaActualTexto" class="text-xs font-medium text-slate-500 mt-1 capitalize">Cargando fecha...</p>
+      <main class="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 space-y-6">
+        <!-- TAB COLAB 1: MARCAJE Y RELOJ -->
+        <div id="colabTabMarcaje" class="tab-colab-content space-y-6">
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 text-center">
+            <span id="badgeModalidad" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-corp mb-3">
+              Verificando ubicación...
+            </span>
+            <div id="relojDigital" class="text-4xl sm:text-6xl font-black tracking-tight text-corp tabular-nums">00:00:00</div>
+            <p id="fechaActualTexto" class="text-xs font-medium text-slate-500 mt-1 capitalize">Cargando fecha...</p>
 
-        <!-- Tarjeta de Turno Programado Hoy -->
-        <div id="cajaTurnoHoy" class="mt-6 bg-slate-50 border border-slate-200 rounded-xl p-4 text-left">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Turno Programado Hoy</span>
-            <span id="turnoTipoBadge" class="text-[11px] font-bold px-2 py-0.5 rounded bg-corp text-white">--</span>
+            <div class="mt-6 bg-slate-50 border border-slate-200 rounded-xl p-4 text-left">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Turno Programado Hoy</span>
+                <span id="turnoTipoBadge" class="text-[11px] font-bold px-2 py-0.5 rounded bg-corp text-white">--</span>
+              </div>
+              <div id="detalleHorarioHoy" class="text-sm font-semibold text-slate-800">Consultando programación...</div>
+            </div>
+
+            <div class="mt-6">
+              <button id="btnAccionMarcaje" onclick="ejecutarMarcaje()" disabled
+                class="w-full py-4 px-6 rounded-2xl bg-slate-300 text-slate-500 font-bold text-base shadow-md transition flex items-center justify-center gap-3 cursor-not-allowed">
+                <i data-lucide="fingerprint" class="w-6 h-6"></i>
+                <span id="textoBotonMarcaje">Sin turno activo</span>
+              </button>
+            </div>
+
+            <div id="lineaTiempoHoy" class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2 text-left hidden">
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                <p class="text-[10px] uppercase font-bold text-slate-400">1. Ingreso</p>
+                <p id="lblMarca1" class="text-sm font-bold text-slate-800 mt-0.5">--:--</p>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                <p class="text-[10px] uppercase font-bold text-slate-400">2. Salida Almuerzo</p>
+                <p id="lblMarca2" class="text-sm font-bold text-slate-800 mt-0.5">--:--</p>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                <p class="text-[10px] uppercase font-bold text-slate-400">3. Regreso Almuerzo</p>
+                <p id="lblMarca3" class="text-sm font-bold text-slate-800 mt-0.5">--:--</p>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                <p class="text-[10px] uppercase font-bold text-slate-400">4. Salida Final</p>
+                <p id="lblMarca4" class="text-sm font-bold text-slate-800 mt-0.5">--:--</p>
+              </div>
+            </div>
           </div>
-          <div id="detalleHorarioHoy" class="text-sm font-semibold text-slate-800">
-            Consultando programación...
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
+              <p class="text-xs font-bold text-slate-400 uppercase">Horas Válidas (Mes)</p>
+              <p class="text-2xl font-black text-corp mt-1"><span id="colabHorasMes">0</span> <span class="text-xs font-normal text-slate-500">hrs</span></p>
+              <p class="text-[11px] text-slate-500 mt-1">Solo días completados</p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
+              <p class="text-xs font-bold text-slate-400 uppercase">Meta Semanal</p>
+              <p class="text-2xl font-black text-emerald-600 mt-1"><span id="colabMetaSemanal">42</span> <span class="text-xs font-normal text-slate-500">hrs/sem</span></p>
+              <p class="text-[11px] text-slate-500 mt-1">Jornada asignada</p>
+            </div>
           </div>
         </div>
 
-        <!-- BOTÓN DINÁMICO GIGANTE DE MARCAJE -->
-        <div id="contenedorBotonMarcaje" class="mt-6">
-          <button id="btnAccionMarcaje" onclick="ejecutarMarcaje()" disabled
-            class="w-full py-4 px-6 rounded-2xl bg-slate-300 text-slate-500 font-bold text-base shadow-md transition flex items-center justify-center gap-3 cursor-not-allowed">
-            <i data-lucide="fingerprint" class="w-6 h-6"></i>
-            <span id="textoBotonMarcaje">Sin turno activo</span>
-          </button>
-        </div>
-
-        <!-- Línea de Tiempo del Día -->
-        <div id="lineaTiempoHoy" class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2 text-left hidden">
-          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-            <p class="text-[10px] uppercase font-bold text-slate-400">1. Ingreso</p>
-            <p id="lblMarca1" class="text-sm font-bold text-slate-800 mt-0.5">--:--</p>
-          </div>
-          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-            <p class="text-[10px] uppercase font-bold text-slate-400">2. Salida Almuerzo</p>
-            <p id="lblMarca2" class="text-sm font-bold text-slate-800 mt-0.5">--:--</p>
-          </div>
-          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-            <p class="text-[10px] uppercase font-bold text-slate-400">3. Regreso Almuerzo</p>
-            <p id="lblMarca3" class="text-sm font-bold text-slate-800 mt-0.5">--:--</p>
-          </div>
-          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-            <p class="text-[10px] uppercase font-bold text-slate-400">4. Salida Final</p>
-            <p id="lblMarca4" class="text-sm font-bold text-slate-800 mt-0.5">--:--</p>
+        <!-- TAB COLAB 2: HISTORIAL -->
+        <div id="colabTabTurnos" class="tab-colab-content hidden">
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
+            <h3 class="text-sm font-bold text-corp mb-4">Mis Turnos Programados e Historial</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="border-b border-slate-200 text-slate-400 uppercase">
+                    <th class="py-2.5 px-2">Fecha</th>
+                    <th class="py-2.5 px-2">Horario</th>
+                    <th class="py-2.5 px-2">Estado</th>
+                    <th class="py-2.5 px-2 text-right">Hrs Válidas</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaHistorialColab" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- KPIs Personales -->
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
-          <p class="text-xs font-bold text-slate-400 uppercase">Horas Válidas (Mes)</p>
-          <p class="text-2xl font-black text-corp mt-1"><span id="colabHorasMes">0</span> <span class="text-xs font-normal text-slate-500">hrs</span></p>
-          <p class="text-[11px] text-slate-500 mt-1">Solo días completados</p>
+        <!-- TAB COLAB 3: OBSERVACIONES -->
+        <div id="colabTabObs" class="tab-colab-content hidden">
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
+            <h3 class="text-sm font-bold text-corp mb-4">Observaciones y Alertas del Administrador</h3>
+            <div id="listaObservacionesColab" class="space-y-2.5 text-xs">
+              <p class="text-slate-400 italic">No tienes observaciones registradas.</p>
+            </div>
+          </div>
         </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
-          <p class="text-xs font-bold text-slate-400 uppercase">Meta Semanal</p>
-          <p class="text-2xl font-black text-emerald-600 mt-1"><span id="colabMetaSemanal">42</span> <span class="text-xs font-normal text-slate-500">hrs/sem</span></p>
-          <p class="text-[11px] text-slate-500 mt-1">Jornada asignada</p>
-        </div>
-      </div>
-
-      <!-- Observaciones del Administrador -->
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
-        <h3 class="text-sm font-bold text-corp flex items-center gap-2 mb-3">
-          <i data-lucide="message-square-warning" class="w-4 h-4"></i> Observaciones y Alertas del Administrador
-        </h3>
-        <div id="listaObservacionesColab" class="space-y-2.5 text-xs">
-          <p class="text-slate-400 italic">No tienes observaciones registradas.</p>
-        </div>
-      </div>
-
-      <!-- Próximos Turnos e Historial -->
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
-        <h3 class="text-sm font-bold text-corp flex items-center gap-2 mb-3">
-          <i data-lucide="calendar-days" class="w-4 h-4"></i> Mis Turnos Programados e Historial
-        </h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr class="border-b border-slate-200 text-slate-400 uppercase">
-                <th class="py-2.5 px-2">Fecha</th>
-                <th class="py-2.5 px-2">Horario</th>
-                <th class="py-2.5 px-2">Estado</th>
-                <th class="py-2.5 px-2 text-right">Hrs Válidas</th>
-              </tr>
-            </thead>
-            <tbody id="tablaHistorialColab" class="divide-y divide-slate-100"></tbody>
-          </table>
-        </div>
-      </div>
-    </main>
+      </main>
+    </div>
   </section>
 
   <!-- ===================================================================== -->
-  <!-- VISTA 3: PANEL ADMINISTRADOR (DASHBOARD GLOBAL)                       -->
+  <!-- VISTA 3: PANEL ADMINISTRADOR (SIDEBAR IZQUIERDO ESTILO APP)           -->
   <!-- ===================================================================== -->
-  <section id="viewAdmin" class="hidden min-h-screen pb-16">
-    <!-- Topbar Admin -->
-    <header class="bg-corp text-white shadow-md sticky top-0 z-30">
-      <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
+  <section id="viewAdmin" class="hidden min-h-screen flex bg-[#f3f6f8]">
+    <!-- Fondo oscuro móvil al abrir sidebar -->
+    <div id="backdropAdmin" onclick="toggleSidebar('admin')" class="fixed inset-0 bg-slate-900/50 z-30 hidden lg:hidden"></div>
+
+    <!-- Sidebar Izquierdo Fijo en Desktop / Desplegable en Móvil -->
+    <aside id="sidebarAdmin" class="fixed inset-y-0 left-0 z-40 w-64 bg-corp text-white flex flex-col justify-between transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-200 ease-in-out shadow-xl shrink-0">
+      <div>
+        <!-- Marca / Logo Sidebar -->
+        <div class="p-5 flex items-center justify-between border-b border-white/10">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
+              <i data-lucide="shield-check" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+              <h2 class="text-sm font-bold leading-tight">Jornada Global</h2>
+              <p class="text-[11px] text-slate-300">Panel Administrativo</p>
+            </div>
+          </div>
+          <button onclick="toggleSidebar('admin')" class="lg:hidden p-1 text-slate-300 hover:text-white">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Menú de Navegación Lateral -->
+        <nav class="p-3 space-y-1.5 text-xs font-semibold">
+          <button onclick="cambiarTabAdmin('tabResumen', 'Resumen y Gráficas')" id="btn-tabResumen"
+            class="tab-admin-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-white/15 text-white transition">
+            <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+            <span>Resumen y Gráficas</span>
+          </button>
+          <button onclick="cambiarTabAdmin('tabAsistencias', 'Auditoría de Asistencias')" id="btn-tabAsistencias"
+            class="tab-admin-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition">
+            <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+            <span>Auditoría de Asistencias</span>
+          </button>
+          <button onclick="cambiarTabAdmin('tabHorarios', 'Programar Horarios (Schedule)')" id="btn-tabHorarios"
+            class="tab-admin-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition">
+            <i data-lucide="calendar-clock" class="w-4 h-4"></i>
+            <span>Programar Horarios</span>
+          </button>
+          <button onclick="cambiarTabAdmin('tabColaboradores', 'Colaboradores y Sedes')" id="btn-tabColaboradores"
+            class="tab-admin-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span>Colaboradores y Sedes</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Pie del Sidebar (Usuario y Cerrar Sesión) -->
+      <div class="p-4 border-t border-white/10 bg-corp-dark/40">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center font-bold text-xs">A</div>
+          <div class="overflow-hidden">
+            <p id="adminNombreHeader" class="text-xs font-bold truncate">Administrador</p>
+            <p class="text-[10px] text-emerald-400">● En línea</p>
+          </div>
+        </div>
+        <button onclick="cerrarSesion()" class="w-full py-2 px-3 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Cerrar Sesión
+        </button>
+      </div>
+    </aside>
+
+    <!-- Área de Contenido Principal Admin -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <!-- Topbar Limpio -->
+      <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-3.5 flex items-center justify-between sticky top-0 z-20">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
-            <i data-lucide="shield-check" class="w-5 h-5 text-white"></i>
-          </div>
-          <div>
-            <h2 class="text-sm font-bold leading-tight">Panel de Control Administrativo</h2>
-            <p class="text-[11px] text-slate-300" id="adminNombreHeader">Administrador</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="cargarDashboardAdmin()" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
-            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Actualizar
+          <button onclick="toggleSidebar('admin')" class="lg:hidden p-2 rounded-lg text-corp hover:bg-slate-100">
+            <i data-lucide="menu" class="w-5 h-5"></i>
           </button>
-          <button onclick="cerrarSesion()" class="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-100 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
-            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Salir
-          </button>
+          <h1 id="tituloHeaderAdmin" class="text-base sm:text-lg font-bold text-corp">Resumen y Gráficas</h1>
         </div>
-      </div>
+        <button onclick="cargarDashboardAdmin()" class="px-3.5 py-2 bg-corp hover:bg-corp-light text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-xs transition">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> <span>Actualizar Datos</span>
+        </button>
+      </header>
 
-      <!-- Navegación por Pestañas Admin -->
-      <div class="bg-[#0e242c] px-4">
-        <div class="max-w-7xl mx-auto flex overflow-x-auto gap-1 text-xs font-semibold">
-          <button onclick="cambiarTabAdmin('tabResumen')" id="btn-tabResumen" class="tab-admin-btn px-4 py-3 border-b-2 border-white text-white whitespace-nowrap">
-            📊 Resumen y Gráficas
-          </button>
-          <button onclick="cambiarTabAdmin('tabAsistencias')" id="btn-tabAsistencias" class="tab-admin-btn px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white whitespace-nowrap">
-            📋 Auditoría de Asistencias
-          </button>
-          <button onclick="cambiarTabAdmin('tabHorarios')" id="btn-tabHorarios" class="tab-admin-btn px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white whitespace-nowrap">
-            📅 Programar Horarios (Schedule)
-          </button>
-          <button onclick="cambiarTabAdmin('tabColaboradores')" id="btn-tabColaboradores" class="tab-admin-btn px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-white whitespace-nowrap">
-            👥 Colaboradores y Sedes
-          </button>
-        </div>
-      </div>
-    </header>
+      <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8">
 
-    <main class="max-w-7xl mx-auto px-4 pt-6">
-
-      <!-- TAB 1: RESUMEN Y GRÁFICAS -->
-      <div id="tabResumen" class="tab-admin-content space-y-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-            <p class="text-xs font-bold text-slate-400 uppercase">Colaboradores Activos</p>
-            <p id="kpiTotalColab" class="text-3xl font-black text-corp mt-1">0</p>
-          </div>
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-            <p class="text-xs font-bold text-slate-400 uppercase">Turnos Completados</p>
-            <p id="kpiCompletados" class="text-3xl font-black text-emerald-600 mt-1">0</p>
-          </div>
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-            <p class="text-xs font-bold text-slate-400 uppercase">Alertas de Retardo</p>
-            <p id="kpiRetardos" class="text-3xl font-black text-amber-500 mt-1">0</p>
-          </div>
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-            <p class="text-xs font-bold text-slate-400 uppercase">Días Incompletos (0 Hrs)</p>
-            <p id="kpiIncompletos" class="text-3xl font-black text-rose-600 mt-1">0</p>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h3 class="text-sm font-bold text-corp mb-4">Horas Válidas Trabajadas por Colaborador</h3>
-            <canvas id="chartHorasColab" height="220"></canvas>
-          </div>
-          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h3 class="text-sm font-bold text-corp mb-4">Distribución de Cumplimiento de Asistencia</h3>
-            <canvas id="chartEstados" height="220"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB 2: AUDITORÍA DE ASISTENCIAS Y EXPORTACIÓN -->
-      <div id="tabAsistencias" class="tab-admin-content hidden space-y-4">
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
-          <div class="flex flex-wrap items-center gap-2">
-            <select id="filtroColabAsist" onchange="renderTablaAsistenciasAdmin()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium">
-              <option value="">Todos los colaboradores</option>
-            </select>
-            <input type="month" id="filtroMesAsist" onchange="renderTablaAsistenciasAdmin()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium" />
-          </div>
-          <button onclick="exportarExcelAsistencias()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm">
-            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Descargar Historial Excel (.xlsx)
-          </button>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead class="bg-corp text-white uppercase">
-                <tr>
-                  <th class="py-3 px-3">Fecha</th>
-                  <th class="py-3 px-3">Colaborador</th>
-                  <th class="py-3 px-3">Entrada</th>
-                  <th class="py-3 px-3">Out Alm.</th>
-                  <th class="py-3 px-3">In Alm.</th>
-                  <th class="py-3 px-3">Salida</th>
-                  <th class="py-3 px-3">Estado</th>
-                  <th class="py-3 px-3">Retardo</th>
-                  <th class="py-3 px-3">Hrs Válidas</th>
-                  <th class="py-3 px-3">Observaciones / GPS</th>
-                  <th class="py-3 px-3 text-center">Acción</th>
-                </tr>
-              </thead>
-              <tbody id="tbodyAsistenciasAdmin" class="divide-y divide-slate-200"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB 3: PROGRAMAR HORARIOS (SCHEDULE) -->
-      <div id="tabHorarios" class="tab-admin-content hidden space-y-6">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-          <h3 class="text-base font-bold text-corp mb-4">Asignar Bloques de Horario</h3>
-          <form id="formProgramarTurno" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-            <div>
-              <label class="block font-bold text-slate-600 mb-1">Colaborador</label>
-              <select id="progUsuario" required class="w-full border border-slate-300 rounded-xl p-2.5"></select>
+        <!-- TAB 1: RESUMEN Y GRÁFICAS -->
+        <div id="tabResumen" class="tab-admin-content space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+              <p class="text-xs font-bold text-slate-400 uppercase">Colaboradores Activos</p>
+              <p id="kpiTotalColab" class="text-3xl font-black text-corp mt-1">0</p>
             </div>
-            <div>
-              <label class="block font-bold text-slate-600 mb-1">Tipo de Turno</label>
-              <select id="progTipo" onchange="toggleCamposAlmuerzo()" class="w-full border border-slate-300 rounded-xl p-2.5">
-                <option value="COMPLETO">Turno Completo (4 Marcajes c/ Almuerzo)</option>
-                <option value="CONTINUO">Turno Continuo / Medio Tiempo (2 Marcajes)</option>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+              <p class="text-xs font-bold text-slate-400 uppercase">Turnos Completados</p>
+              <p id="kpiCompletados" class="text-3xl font-black text-emerald-600 mt-1">0</p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+              <p class="text-xs font-bold text-slate-400 uppercase">Alertas de Retardo</p>
+              <p id="kpiRetardos" class="text-3xl font-black text-amber-500 mt-1">0</p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+              <p class="text-xs font-bold text-slate-400 uppercase">Días Incompletos (0 Hrs)</p>
+              <p id="kpiIncompletos" class="text-3xl font-black text-rose-600 mt-1">0</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+              <h3 class="text-sm font-bold text-corp mb-4">Horas Válidas Trabajadas por Colaborador</h3>
+              <canvas id="chartHorasColab" height="220"></canvas>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+              <h3 class="text-sm font-bold text-corp mb-4">Distribución de Cumplimiento de Asistencia</h3>
+              <canvas id="chartEstados" height="220"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: AUDITORÍA DE ASISTENCIAS Y EXPORTACIÓN -->
+        <div id="tabAsistencias" class="tab-admin-content hidden space-y-4">
+          <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="filtroColabAsist" onchange="renderTablaAsistenciasAdmin()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium">
+                <option value="">Todos los colaboradores</option>
               </select>
+              <input type="month" id="filtroMesAsist" onchange="renderTablaAsistenciasAdmin()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium" />
             </div>
-            <div>
-              <label class="block font-bold text-slate-600 mb-1">Fecha Inicio</label>
-              <input type="date" id="progFechaInicio" required class="w-full border border-slate-300 rounded-xl p-2.5" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-600 mb-1">Fecha Fin (Para programar semana)</label>
-              <input type="date" id="progFechaFin" required class="w-full border border-slate-300 rounded-xl p-2.5" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-600 mb-1">Hora Entrada</label>
-              <input type="time" id="progEntrada" value="08:00" required class="w-full border border-slate-300 rounded-xl p-2.5" />
-            </div>
-            <div id="divOutAlm">
-              <label class="block font-bold text-slate-600 mb-1">Salida Almuerzo</label>
-              <input type="time" id="progOutAlm" value="13:00" class="w-full border border-slate-300 rounded-xl p-2.5" />
-            </div>
-            <div id="divInAlm">
-              <label class="block font-bold text-slate-600 mb-1">Regreso Almuerzo</label>
-              <input type="time" id="progInAlm" value="14:00" class="w-full border border-slate-300 rounded-xl p-2.5" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-600 mb-1">Hora Salida Final</label>
-              <input type="time" id="progSalida" value="18:00" required class="w-full border border-slate-300 rounded-xl p-2.5" />
-            </div>
-            <div class="sm:col-span-2 lg:col-span-4 flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
-              <label class="inline-flex items-center gap-2 text-slate-600 font-medium">
-                <input type="checkbox" id="progExcluirDomingos" checked class="rounded text-corp" />
-                Excluir domingos automáticamente al programar rango de fechas
-              </label>
-              <button type="submit" class="bg-corp hover:bg-corp-light text-white px-6 py-2.5 rounded-xl font-bold shadow">
-                Guardar Programación
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base font-bold text-corp">Turnos Programados Recientes</h3>
-            <button onclick="exportarExcelTurnos()" class="bg-corp text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-              <i data-lucide="download" class="w-3.5 h-3.5"></i> Descargar Turnos (.xlsx)
+            <button onclick="exportarExcelAsistencias()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Descargar Historial Excel (.xlsx)
             </button>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead class="bg-slate-100 text-slate-600 uppercase">
-                <tr>
-                  <th class="py-2.5 px-3">Fecha</th>
-                  <th class="py-2.5 px-3">Colaborador</th>
-                  <th class="py-2.5 px-3">Tipo</th>
-                  <th class="py-2.5 px-3">Entrada</th>
-                  <th class="py-2.5 px-3">Almuerzo</th>
-                  <th class="py-2.5 px-3">Salida</th>
-                  <th class="py-2.5 px-3">Hrs Prog.</th>
-                </tr>
-              </thead>
-              <tbody id="tbodyTurnosAdmin" class="divide-y divide-slate-100"></tbody>
-            </table>
+
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-corp text-white uppercase">
+                  <tr>
+                    <th class="py-3 px-3">Fecha</th>
+                    <th class="py-3 px-3">Colaborador</th>
+                    <th class="py-3 px-3">Entrada</th>
+                    <th class="py-3 px-3">Out Alm.</th>
+                    <th class="py-3 px-3">In Alm.</th>
+                    <th class="py-3 px-3">Salida</th>
+                    <th class="py-3 px-3">Estado</th>
+                    <th class="py-3 px-3">Retardo</th>
+                    <th class="py-3 px-3">Hrs Válidas</th>
+                    <th class="py-3 px-3">Observaciones / GPS</th>
+                    <th class="py-3 px-3 text-center">Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyAsistenciasAdmin" class="divide-y divide-slate-200"></tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- TAB 4: COLABORADORES Y SEDES -->
-      <div id="tabColaboradores" class="tab-admin-content hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Formulario Crear/Editar Usuario -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-          <h3 class="text-base font-bold text-corp" id="tituloFormUsuario">Registrar Colaborador</h3>
-          <form id="formUsuario" class="space-y-3 text-xs">
-            <input type="hidden" id="usrId" />
-            <div>
-              <label class="block font-bold text-slate-600 mb-1">Nombre Completo</label>
-              <input type="text" id="usrNombre" required class="w-full border border-slate-300 rounded-xl p-2.5" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-600 mb-1">Usuario de Acceso (Login)</label>
-              <input type="text" id="usrLogin" required class="w-full border border-slate-300 rounded-xl p-2.5" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-600 mb-1">Contraseña <span class="font-normal text-slate-400">(Dejar vacía para no cambiar al editar)</span></label>
-              <input type="password" id="usrPass" class="w-full border border-slate-300 rounded-xl p-2.5" />
-            </div>
-            <div class="grid grid-cols-2 gap-2">
+        <!-- TAB 3: PROGRAMAR HORARIOS (SCHEDULE) -->
+        <div id="tabHorarios" class="tab-admin-content hidden space-y-6">
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="text-base font-bold text-corp mb-4">Asignar Bloques de Horario</h3>
+            <form id="formProgramarTurno" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
               <div>
-                <label class="block font-bold text-slate-600 mb-1">Perfil / Rol</label>
-                <select id="usrRol" class="w-full border border-slate-300 rounded-xl p-2.5">
-                  <option value="COLABORADOR">COLABORADOR</option>
-                  <option value="ADMIN">ADMIN</option>
+                <label class="block font-bold text-slate-600 mb-1">Colaborador</label>
+                <select id="progUsuario" required class="w-full border border-slate-300 rounded-xl p-2.5"></select>
+              </div>
+              <div>
+                <label class="block font-bold text-slate-600 mb-1">Tipo de Turno</label>
+                <select id="progTipo" onchange="toggleCamposAlmuerzo()" class="w-full border border-slate-300 rounded-xl p-2.5">
+                  <option value="COMPLETO">Turno Completo (4 Marcajes c/ Almuerzo)</option>
+                  <option value="CONTINUO">Turno Continuo / Medio Tiempo (2 Marcajes)</option>
                 </select>
               </div>
               <div>
-                <label class="block font-bold text-slate-600 mb-1">Modalidad</label>
-                <select id="usrModalidad" class="w-full border border-slate-300 rounded-xl p-2.5">
-                  <option value="PRESENCIAL">PRESENCIAL (GPS Estricto)</option>
-                  <option value="REMOTO">REMOTO / TELETRABAJO</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label class="block font-bold text-slate-600 mb-1">Sede Asignada</label>
-              <select id="usrSede" class="w-full border border-slate-300 rounded-xl p-2.5"></select>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block font-bold text-slate-600 mb-1">Zona Horaria (País)</label>
-                <select id="usrZona" class="w-full border border-slate-300 rounded-xl p-2.5">
-                  <option value="America/Bogota">Colombia / Perú / Ecuador (UTC-5)</option>
-                  <option value="America/Mexico_City">México Centro (UTC-6)</option>
-                  <option value="America/Argentina/Buenos_Aires">Argentina / Chile (UTC-3)</option>
-                  <option value="America/New_York">USA Este (UTC-5/-4)</option>
-                  <option value="Europe/Madrid">España (UTC+1/+2)</option>
-                </select>
+                <label class="block font-bold text-slate-600 mb-1">Fecha Inicio</label>
+                <input type="date" id="progFechaInicio" required class="w-full border border-slate-300 rounded-xl p-2.5" />
               </div>
               <div>
-                <label class="block font-bold text-slate-600 mb-1">Meta Semanal (Hrs)</label>
-                <input type="number" id="usrMeta" value="42" required class="w-full border border-slate-300 rounded-xl p-2.5" />
+                <label class="block font-bold text-slate-600 mb-1">Fecha Fin (Para programar semana)</label>
+                <input type="date" id="progFechaFin" required class="w-full border border-slate-300 rounded-xl p-2.5" />
               </div>
-            </div>
-            <div>
-              <label class="block font-bold text-slate-600 mb-1">Estado</label>
-              <select id="usrEstado" class="w-full border border-slate-300 rounded-xl p-2.5">
-                <option value="ACTIVO">ACTIVO</option>
-                <option value="INACTIVO">INACTIVO</option>
-              </select>
-            </div>
-            <div class="flex gap-2 pt-2">
-              <button type="submit" class="flex-1 bg-corp text-white py-2.5 rounded-xl font-bold">Guardar Usuario</button>
-              <button type="button" onclick="resetFormUsuario()" class="px-3 py-2.5 bg-slate-200 rounded-xl font-bold">Limpiar</button>
-            </div>
-          </form>
-
-          <!-- Crear Sede Física -->
-          <div class="pt-6 border-t border-slate-200">
-            <h4 class="text-sm font-bold text-corp mb-3">Agregar Sede Física (Geocerca)</h4>
-            <form id="formSede" class="space-y-2.5 text-xs">
-              <input type="text" id="sedeNombre" placeholder="Nombre de Oficina (Ej: Sede Medellín)" required class="w-full border border-slate-300 rounded-xl p-2" />
-              <input type="text" id="sedePais" placeholder="País" required class="w-full border border-slate-300 rounded-xl p-2" />
-              <div class="grid grid-cols-3 gap-2">
-                <input type="text" id="sedeLat" placeholder="Latitud" required class="border border-slate-300 rounded-xl p-2" />
-                <input type="text" id="sedeLng" placeholder="Longitud" required class="border border-slate-300 rounded-xl p-2" />
-                <input type="number" id="sedeRadio" placeholder="Radio (m)" value="60" required class="border border-slate-300 rounded-xl p-2" />
+              <div>
+                <label class="block font-bold text-slate-600 mb-1">Hora Entrada</label>
+                <input type="time" id="progEntrada" value="08:00" required class="w-full border border-slate-300 rounded-xl p-2.5" />
               </div>
-              <button type="button" onclick="capturarGPSParaSede()" class="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-corp font-semibold rounded-lg">
-                📍 Usar mi ubicación actual como coordenadas
-              </button>
-              <button type="submit" class="w-full bg-corp text-white py-2 rounded-xl font-bold">Crear Sede</button>
+              <div id="divOutAlm">
+                <label class="block font-bold text-slate-600 mb-1">Salida Almuerzo</label>
+                <input type="time" id="progOutAlm" value="13:00" class="w-full border border-slate-300 rounded-xl p-2.5" />
+              </div>
+              <div id="divInAlm">
+                <label class="block font-bold text-slate-600 mb-1">Regreso Almuerzo</label>
+                <input type="time" id="progInAlm" value="14:00" class="w-full border border-slate-300 rounded-xl p-2.5" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-600 mb-1">Hora Salida Final</label>
+                <input type="time" id="progSalida" value="18:00" required class="w-full border border-slate-300 rounded-xl p-2.5" />
+              </div>
+              <div class="sm:col-span-2 lg:col-span-4 flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                <label class="inline-flex items-center gap-2 text-slate-600 font-medium">
+                  <input type="checkbox" id="progExcluirDomingos" checked class="rounded text-corp" />
+                  Excluir domingos automáticamente al programar rango de fechas
+                </label>
+                <button type="submit" class="bg-corp hover:bg-corp-light text-white px-6 py-2.5 rounded-xl font-bold shadow">
+                  Guardar Programación
+                </button>
+              </div>
             </form>
           </div>
-        </div>
 
-        <!-- Lista de Colaboradores -->
-        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-          <h3 class="text-base font-bold text-corp mb-4">Directorio de Colaboradores</h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead class="bg-slate-100 text-slate-600 uppercase">
-                <tr>
-                  <th class="py-2.5 px-3">Nombre / Login</th>
-                  <th class="py-2.5 px-3">Rol</th>
-                  <th class="py-2.5 px-3">Modalidad / Sede</th>
-                  <th class="py-2.5 px-3">Zona Horaria</th>
-                  <th class="py-2.5 px-3">Meta</th>
-                  <th class="py-2.5 px-3">Editar</th>
-                </tr>
-              </thead>
-              <tbody id="tbodyUsuariosAdmin" class="divide-y divide-slate-100"></tbody>
-            </table>
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-base font-bold text-corp">Turnos Programados Recientes</h3>
+              <button onclick="exportarExcelTurnos()" class="bg-corp text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i> Descargar Turnos (.xlsx)
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-slate-100 text-slate-600 uppercase">
+                  <tr>
+                    <th class="py-2.5 px-3">Fecha</th>
+                    <th class="py-2.5 px-3">Colaborador</th>
+                    <th class="py-2.5 px-3">Tipo</th>
+                    <th class="py-2.5 px-3">Entrada</th>
+                    <th class="py-2.5 px-3">Almuerzo</th>
+                    <th class="py-2.5 px-3">Salida</th>
+                    <th class="py-2.5 px-3">Hrs Prog.</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyTurnosAdmin" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+
+        <!-- TAB 4: COLABORADORES Y SEDES -->
+        <div id="tabColaboradores" class="tab-admin-content hidden grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+            <h3 class="text-base font-bold text-corp" id="tituloFormUsuario">Registrar Colaborador</h3>
+            <form id="formUsuario" class="space-y-3 text-xs">
+              <input type="hidden" id="usrId" />
+              <div>
+                <label class="block font-bold text-slate-600 mb-1">Nombre Completo</label>
+                <input type="text" id="usrNombre" required class="w-full border border-slate-300 rounded-xl p-2.5" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-600 mb-1">Usuario de Acceso (Login)</label>
+                <input type="text" id="usrLogin" required class="w-full border border-slate-300 rounded-xl p-2.5" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-600 mb-1">Contraseña <span class="font-normal text-slate-400">(Vacía = sin cambios)</span></label>
+                <input type="password" id="usrPass" class="w-full border border-slate-300 rounded-xl p-2.5" />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block font-bold text-slate-600 mb-1">Perfil / Rol</label>
+                  <select id="usrRol" class="w-full border border-slate-300 rounded-xl p-2.5">
+                    <option value="COLABORADOR">COLABORADOR</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-600 mb-1">Modalidad</label>
+                  <select id="usrModalidad" class="w-full border border-slate-300 rounded-xl p-2.5">
+                    <option value="PRESENCIAL">PRESENCIAL (GPS Estricto)</option>
+                    <option value="REMOTO">REMOTO / TELETRABAJO</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="block font-bold text-slate-600 mb-1">Sede Asignada</label>
+                <select id="usrSede" class="w-full border border-slate-300 rounded-xl p-2.5"></select>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block font-bold text-slate-600 mb-1">Zona Horaria (País)</label>
+                  <select id="usrZona" class="w-full border border-slate-300 rounded-xl p-2.5">
+                    <option value="America/Bogota">Colombia / Perú / Ecuador (UTC-5)</option>
+                    <option value="America/Mexico_City">México Centro (UTC-6)</option>
+                    <option value="America/Argentina/Buenos_Aires">Argentina / Chile (UTC-3)</option>
+                    <option value="America/New_York">USA Este (UTC-5/-4)</option>
+                    <option value="Europe/Madrid">España (UTC+1/+2)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-600 mb-1">Meta Semanal (Hrs)</label>
+                  <input type="number" id="usrMeta" value="42" required class="w-full border border-slate-300 rounded-xl p-2.5" />
+                </div>
+              </div>
+              <div>
+                <label class="block font-bold text-slate-600 mb-1">Estado</label>
+                <select id="usrEstado" class="w-full border border-slate-300 rounded-xl p-2.5">
+                  <option value="ACTIVO">ACTIVO</option>
+                  <option value="INACTIVO">INACTIVO</option>
+                </select>
+              </div>
+              <div class="flex gap-2 pt-2">
+                <button type="submit" class="flex-1 bg-corp text-white py-2.5 rounded-xl font-bold">Guardar Usuario</button>
+                <button type="button" onclick="resetFormUsuario()" class="px-3 py-2.5 bg-slate-200 rounded-xl font-bold">Limpiar</button>
+              </div>
+            </form>
+
+            <div class="pt-6 border-t border-slate-200">
+              <h4 class="text-sm font-bold text-corp mb-3">Agregar Sede Física (Geocerca)</h4>
+              <form id="formSede" class="space-y-2.5 text-xs">
+                <input type="text" id="sedeNombre" placeholder="Nombre de Oficina (Ej: Sede Medellín)" required class="w-full border border-slate-300 rounded-xl p-2" />
+                <input type="text" id="sedePais" placeholder="País" required class="w-full border border-slate-300 rounded-xl p-2" />
+                <div class="grid grid-cols-3 gap-2">
+                  <input type="text" id="sedeLat" placeholder="Latitud" required class="border border-slate-300 rounded-xl p-2" />
+                  <input type="text" id="sedeLng" placeholder="Longitud" required class="border border-slate-300 rounded-xl p-2" />
+                  <input type="number" id="sedeRadio" placeholder="Radio (m)" value="60" required class="border border-slate-300 rounded-xl p-2" />
+                </div>
+                <button type="button" onclick="capturarGPSParaSede()" class="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-corp font-semibold rounded-lg">
+                  📍 Usar mi ubicación actual como coordenadas
+                </button>
+                <button type="submit" class="w-full bg-corp text-white py-2 rounded-xl font-bold">Crear Sede</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="xl:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="text-base font-bold text-corp mb-4">Directorio de Colaboradores</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-slate-100 text-slate-600 uppercase">
+                  <tr>
+                    <th class="py-2.5 px-3">Nombre / Login</th>
+                    <th class="py-2.5 px-3">Rol</th>
+                    <th class="py-2.5 px-3">Modalidad / Sede</th>
+                    <th class="py-2.5 px-3">Zona Horaria</th>
+                    <th class="py-2.5 px-3">Meta</th>
+                    <th class="py-2.5 px-3">Editar</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyUsuariosAdmin" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
   </section>
 
-  <!-- ===================================================================== -->
-  <!-- MODAL EDITAR ASISTENCIA (ADMIN)                                       -->
-  <!-- ===================================================================== -->
-  <div id="modalEditarAsist" class="fixed inset-0 bg-slate-900/60 z-40 hidden items-center justify-center p-4">
+  <!-- MODAL EDITAR ASISTENCIA (ADMIN) -->
+  <div id="modalEditarAsist" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <h3 class="text-base font-bold text-corp">Auditar / Editar Registro de Asistencia</h3>
       <form id="formEditarAsist" class="space-y-3 text-xs">
@@ -579,7 +652,7 @@
   </div>
 
   <!-- MODAL CAMBIAR CONTRASEÑA (COLABORADOR) -->
-  <div id="modalClave" class="fixed inset-0 bg-slate-900/60 z-40 hidden items-center justify-center p-4">
+  <div id="modalClave" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
       <h3 class="text-base font-bold text-corp">Actualizar Contraseña</h3>
       <form id="formCambiarClave" class="space-y-3 text-xs">
@@ -614,6 +687,20 @@
         iniciarVistaPorRol();
       }
     });
+
+    // --- CONTROL DE SIDEBAR RESPONSIVO ---
+    function toggleSidebar(rol) {
+      const sidebar = document.getElementById(rol === "admin" ? "sidebarAdmin" : "sidebarColab");
+      const backdrop = document.getElementById(rol === "admin" ? "backdropAdmin" : "backdropColab");
+      const estaCerrado = sidebar.classList.contains("-translate-x-full");
+      if (estaCerrado) {
+        sidebar.classList.remove("-translate-x-full");
+        backdrop.classList.remove("hidden");
+      } else {
+        sidebar.classList.add("-translate-x-full");
+        backdrop.classList.add("hidden");
+      }
+    }
 
     // --- UTILIDADES DE UI Y API ---
     function mostrarLoader(mostrar, texto = "Sincronizando con servidor...") {
@@ -692,11 +779,26 @@
       }
     }
 
+    // --- NAVEGACIÓN SIDEBAR COLABORADOR ---
+    function cambiarTabColab(tabId) {
+      document.querySelectorAll(".tab-colab-content").forEach(el => el.classList.add("hidden"));
+      document.getElementById(tabId).classList.remove("hidden");
+      document.querySelectorAll(".tab-colab-btn").forEach(btn => {
+        btn.classList.remove("bg-white/15", "text-white");
+        btn.classList.add("text-slate-300");
+      });
+      const activeBtn = document.getElementById("btn-" + tabId);
+      activeBtn.classList.add("bg-white/15", "text-white");
+      activeBtn.classList.remove("text-slate-300");
+      document.getElementById("tituloHeaderColab").textContent = activeBtn.innerText.trim();
+      if (window.innerWidth < 1024) toggleSidebar("colab");
+    }
+
     // --- PORTAL COLABORADOR ---
     function obtenerFechaHoraZona(zona) {
       const ahora = new Date();
       const opcionesFecha = { timeZone: zona, year: 'numeric', month: '2-digit', day: '2-digit' };
-      const partesF = new Intl.DateTimeFormat('en-CA', opcionesFecha).format(ahora); // YYYY-MM-DD
+      const partesF = new Intl.DateTimeFormat('en-CA', opcionesFecha).format(ahora);
       const opcionesHora = { timeZone: zona, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
       const horaStr = new Intl.DateTimeFormat('en-GB', opcionesHora).format(ahora);
       const fechaLarga = new Intl.DateTimeFormat('es-ES', { timeZone: zona, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(ahora);
@@ -706,13 +808,13 @@
     async function iniciarPortalColaborador() {
       document.getElementById("colabName").textContent = usuarioActual.nombre;
       document.getElementById("colabAvatar").textContent = usuarioActual.nombre.charAt(0).toUpperCase();
-      document.getElementById("colabMetaInfo").textContent = `${usuarioActual.modalidad} • ${usuarioActual.zonaHoraria}`;
+      document.getElementById("colabMetaInfo").textContent = `${usuarioActual.modalidad}`;
       document.getElementById("colabMetaSemanal").textContent = usuarioActual.metaSemanal;
 
       const badgeMod = document.getElementById("badgeModalidad");
       badgeMod.innerHTML = usuarioActual.modalidad === "PRESENCIAL"
         ? `📍 Sede: ${usuarioActual.sede.nombre} (Geocerca activa)`
-        : `🌍 Modalidad Teletrabajo Global`;
+        : `🌍 Modalidad Teletrabajo (${usuarioActual.zonaHoraria})`;
 
       if (intervaloReloj) clearInterval(intervaloReloj);
       const actualizarReloj = () => {
@@ -773,7 +875,6 @@
         document.getElementById("lblMarca3").textContent = turnoHoy.tipoTurno === "CONTINUO" ? "N/A" : (asistenciaHoy?.marcaInAlmuerzo || "--:--");
         document.getElementById("lblMarca4").textContent = asistenciaHoy?.marcaSalida || "--:--";
 
-        // Máquina de estados del botón
         let siguientePaso = null;
         let etiqueta = "";
         let colorBtn = "bg-corp hover:bg-corp-light text-white";
@@ -808,14 +909,12 @@
         }
       }
 
-      // Render Observaciones
       const obsList = historialAsistencias.filter(a => a.observaciones && a.observaciones.trim() !== "");
       const contObs = document.getElementById("listaObservacionesColab");
       contObs.innerHTML = obsList.length
         ? obsList.map(o => `<div class="p-3 bg-amber-50 border-l-4 border-amber-500 rounded-r-xl"><span class="font-bold text-slate-800">${o.fecha}:</span> <span class="text-slate-700">${o.observaciones}</span></div>`).join("")
         : `<p class="text-slate-400 italic">No tienes observaciones registradas.</p>`;
 
-      // Render Tabla Historial
       const tbody = document.getElementById("tablaHistorialColab");
       tbody.innerHTML = historialTurnos.map(t => {
         const asist = historialAsistencias.find(a => a.idTurno === t.idTurno);
@@ -878,7 +977,6 @@
       }
     }
 
-    // Cambio de clave colaborador
     function abrirModalClave() {
       document.getElementById("modalClave").classList.remove("hidden");
       document.getElementById("modalClave").classList.add("flex");
@@ -900,17 +998,19 @@
       notificar("Seguridad", res.mensaje, res.exito ? "ok" : "error");
     });
 
-    // --- PANEL ADMINISTRADOR ---
-    function cambiarTabAdmin(tabId) {
+    // --- NAVEGACIÓN SIDEBAR ADMINISTRADOR ---
+    function cambiarTabAdmin(tabId, titulo) {
       document.querySelectorAll(".tab-admin-content").forEach(el => el.classList.add("hidden"));
       document.getElementById(tabId).classList.remove("hidden");
       document.querySelectorAll(".tab-admin-btn").forEach(btn => {
-        btn.classList.remove("border-white", "text-white");
-        btn.classList.add("border-transparent", "text-slate-400");
+        btn.classList.remove("bg-white/15", "text-white");
+        btn.classList.add("text-slate-300");
       });
       const activeBtn = document.getElementById("btn-" + tabId);
-      activeBtn.classList.add("border-white", "text-white");
-      activeBtn.classList.remove("border-transparent", "text-slate-400");
+      activeBtn.classList.add("bg-white/15", "text-white");
+      activeBtn.classList.remove("text-slate-300");
+      if (titulo) document.getElementById("tituloHeaderAdmin").textContent = titulo;
+      if (window.innerWidth < 1024) toggleSidebar("admin");
     }
 
     async function cargarDashboardAdmin() {
@@ -930,7 +1030,6 @@
       const { usuarios, sedes, turnos, asistencias } = datosAdminCache;
       const colabs = usuarios.filter(u => u.rol === "COLABORADOR");
 
-      // KPIs
       document.getElementById("kpiTotalColab").textContent = colabs.filter(c => c.estado === "ACTIVO").length;
       const completados = asistencias.filter(a => a.estado === "COMPLETADO").length;
       const retardos = asistencias.filter(a => a.retardoMin > 0).length;
@@ -940,7 +1039,6 @@
       document.getElementById("kpiRetardos").textContent = retardos;
       document.getElementById("kpiIncompletos").textContent = incompletos;
 
-      // Gráfica 1: Horas por colaborador
       const nombres = colabs.map(c => c.nombre);
       const horasPorColab = colabs.map(c =>
         asistencias.filter(a => a.idUsuario === c.id && a.estado === "COMPLETADO")
@@ -957,7 +1055,6 @@
         options: { responsive: true, plugins: { legend: { display: false } } }
       });
 
-      // Gráfica 2: Estados
       if (chartEstados) chartEstados.destroy();
       chartEstados = new Chart(document.getElementById("chartEstados"), {
         type: "doughnut",
@@ -971,13 +1068,11 @@
         options: { responsive: true }
       });
 
-      // Llenar selects
       const optsColab = colabs.map(c => `<option value="${c.id}">${c.nombre} (${c.modalidad})</option>`).join("");
       document.getElementById("progUsuario").innerHTML = optsColab;
       document.getElementById("filtroColabAsist").innerHTML = `<option value="">Todos los colaboradores</option>` + optsColab;
       document.getElementById("usrSede").innerHTML = sedes.map(s => `<option value="${s.id}">${s.nombre} (${s.pais})</option>`).join("");
 
-      // Tabla Usuarios
       document.getElementById("tbodyUsuariosAdmin").innerHTML = usuarios.map(u => `
         <tr>
           <td class="py-2.5 px-3"><div class="font-bold">${u.nombre}</div><div class="text-slate-400">${u.login}</div></td>
@@ -989,7 +1084,6 @@
         </tr>
       `).join("");
 
-      // Tabla Turnos
       document.getElementById("tbodyTurnosAdmin").innerHTML = turnos.slice().reverse().slice(0, 50).map(t => {
         const u = usuarios.find(x => x.id === t.idUsuario);
         return `<tr>
@@ -1044,7 +1138,6 @@
       }).join("");
     }
 
-    // Edición de Asistencia por Admin
     function abrirModalEditarAsist(a) {
       document.getElementById("editAsistId").value = a.idRegistro;
       document.getElementById("editEntrada").value = a.marcaEntrada;
@@ -1090,7 +1183,6 @@
       await cargarDashboardAdmin();
     }
 
-    // Programar Turnos
     function toggleCamposAlmuerzo() {
       const esCompleto = document.getElementById("progTipo").value === "COMPLETO";
       document.getElementById("divOutAlm").classList.toggle("hidden", !esCompleto);
@@ -1128,7 +1220,6 @@
       await cargarDashboardAdmin();
     });
 
-    // Gestión de Usuarios y Sedes
     function cargarUsuarioEnForm(u) {
       document.getElementById("tituloFormUsuario").textContent = "Editando: " + u.nombre;
       document.getElementById("usrId").value = u.id;
@@ -1203,7 +1294,6 @@
       await cargarDashboardAdmin();
     });
 
-    // Exportación a Excel Real (.xlsx)
     function exportarExcelAsistencias() {
       const { asistencias, usuarios } = datosAdminCache;
       const data = asistencias.map(a => {
